@@ -19,16 +19,14 @@ public interface OrionMainHandler {
 	/**
 	 * 中心处理器
 	 * 
-	 * @param rct
-	 *          上下文
-	 * @param params
-	 *          用户请求的参数
-	 * @param data
-	 *          拓展参数
-	 * @param handler
-	 *          完成 如果没有后置处理器调用handler.complete()<br>
-	 *          如果有后置处理器调用handler.complete(后端响应数据),<br>
-	 *          异常调用handler.fail(异常)
+	 * @param rct          上下文
+	 * @param cacheHandler 缓存处理器,用于做缓存的添加或删除
+	 * @param params       用户请求的参数
+	 * @param data         拓展参数
+	 * @param handler      完成 如果没有后置处理器调用handler.complete()<br>
+	 *                     如果有后置处理器调用handler.complete(后端响应数据),<br>
+	 *                     异常调用handler.fail(异常)
 	 */
-	void handle(RoutingContext rct, OrionParameter params, Object data, Handler<AsyncResult<HttpClientResponse>> handler);
+	void handle(RoutingContext rct, OrionCacheHandler cacheHandler, OrionParameter params, Object data,
+			Handler<AsyncResult<HttpClientResponse>> handler);
 }

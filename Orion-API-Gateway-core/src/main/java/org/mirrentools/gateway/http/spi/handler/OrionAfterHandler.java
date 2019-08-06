@@ -20,11 +20,11 @@ public interface OrionAfterHandler {
 	 * 提示:如果有后置处理器,网关请求后端得到响应后会执行后置处理器,<br>
 	 * 后置处理器可以直接调用上下文结束请求,也可以调用handler.complete(要响应给用户的数据)
 	 * 
-	 * @param rct
-	 *          上下文
-	 * @param response
-	 *          官网请求后台得到响应的数据
+	 * @param rct          上下文
+	 * @param cacheHandler 缓存处理器,用于做缓存的添加或删除
+	 * @param response     官网请求后台得到响应的数据
 	 * @param handler
 	 */
-	void handle(RoutingContext rct, HttpClientResponse response, Handler<AsyncResult<Buffer>> handler);
+	void handle(RoutingContext rct, OrionCacheHandler cacheHandler, HttpClientResponse response,
+			Handler<AsyncResult<Buffer>> handler);
 }

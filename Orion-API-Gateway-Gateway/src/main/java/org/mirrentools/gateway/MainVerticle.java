@@ -3,6 +3,12 @@ package org.mirrentools.gateway;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 
+/**
+ * 网关主控制器
+ * 
+ * @author <a href="https://mirrentools.org/">Mirren</a>
+ * @version 1.0.0
+ */
 public class MainVerticle extends AbstractVerticle {
 	/**
 	 * 仅用于IDE中测试启动用
@@ -12,6 +18,7 @@ public class MainVerticle extends AbstractVerticle {
 	public static void main(String[] args) {
 		MainLauncher.start(MainVerticle.class);
 	}
+
 	@Override
 	public void start(Promise<Void> startPromise) throws Exception {
 		vertx.createHttpServer().requestHandler(req -> {
@@ -25,5 +32,7 @@ public class MainVerticle extends AbstractVerticle {
 			}
 		});
 	}
-
+	
+	
+	
 }
