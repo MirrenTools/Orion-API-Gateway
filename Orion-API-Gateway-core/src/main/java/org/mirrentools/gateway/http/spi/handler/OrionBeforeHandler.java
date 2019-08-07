@@ -1,6 +1,6 @@
 package org.mirrentools.gateway.http.spi.handler;
 
-import org.mirrentools.gateway.http.OrionParameter;
+import org.mirrentools.gateway.http.model.OrionParameter;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

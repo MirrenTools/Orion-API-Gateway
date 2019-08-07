@@ -3,16 +3,18 @@ package org.mirrentools.gateway.http.http1x;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mirrentools.gateway.OrionProcessEndException;
 import org.mirrentools.gateway.common.OrionApiGatewayAttribute;
-import org.mirrentools.gateway.http.OrionParameter;
-import org.mirrentools.gateway.http.OrionStatusResponse;
+import org.mirrentools.gateway.http.OrionHttpApiOptions;
 import org.mirrentools.gateway.http.enums.OrionApiDefaultResponse;
-import org.mirrentools.gateway.http.options.OrionHttpApiOptions;
+import org.mirrentools.gateway.http.enums.WanderDestination;
+import org.mirrentools.gateway.http.model.OrionParameter;
+import org.mirrentools.gateway.http.model.OrionStatusResponse;
 import org.mirrentools.gateway.http.spi.handler.OrionCacheHandler;
 
 import io.vertx.core.Future;
@@ -33,6 +35,8 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 
 	/** OrionHttp1xApi配置 */
 	private OrionHttpApiOptions options;
+	/** 游行处理器的位置 */
+	WanderDestination destination;
 
 	/**
 	 * 初始化
@@ -41,11 +45,12 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 */
 	public OrionHttp1xApiImpl(OrionHttpApiOptions options) {
 		super();
-		if (options == null) {
-			throw new NullPointerException("The options cannot be null");
-		}
-		if (options.getMainHandler() == null) {
-			throw new NullPointerException("The main handler cannot be null ");
+		Objects.requireNonNull(options, "The options cannot be null");
+		Objects.requireNonNull(options.getMainHandler(), "The main handler cannot be null ");
+		if (options.getWanderHandler() != null) {
+			Objects.requireNonNull(options.getWanderHandler().getDestination(),
+					"If the WanderHandler is not null, then the Destination cannot be null.");
+			this.destination = options.getWanderHandler().getDestination();
 		}
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("初始化OrionHttp1xApi->Options:" + options);
@@ -72,13 +77,18 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 			}
 		});
 		// 按流程执行处理器
-		step1Blacklist(event);
+		if (destination == WanderDestination.BLACKLIST) {
+			wander(event, null, options.getCacheHandler(), null, options.getData());
+		} else {
+			step1Blacklist(event, options.getData());
+		}
+
 	}
 
 	@Override
 	public void failureHandler(RoutingContext failureHandler) {
 		// 如果response处理异常并添加结束请求监听
-		if (failureHandler.response().ended() || failureHandler.response().closed()) {
+		if (checkEnd(failureHandler)) {
 			if (options.getFailureHandlerListeners() != null) {
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("请求异常监听器->数量:" + options.getHandlerEndListeners().size());
@@ -103,6 +113,9 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param data
 	 */
 	private void endResponse(RoutingContext rct, OrionStatusResponse status) {
+		if (checkEnd(rct)) {
+			return;
+		}
 		if (status == null) {
 			status = OrionApiDefaultResponse.FAILURE.data();
 		}
@@ -121,20 +134,108 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	}
 
 	/**
+	 * 游行处理器
+	 * 
+	 * @param rct
+	 * @param params
+	 * @param cacheHandler
+	 * @param response
+	 * @param data
+	 */
+	private void wander(RoutingContext rct, OrionParameter params, OrionCacheHandler cacheHandler,
+			HttpClientResponse response, Object data) {
+		if (checkEnd(rct)) {
+			return;
+		} else {
+			options.getWanderHandler().handle(rct, data, res -> {
+				if (res.succeeded()) {
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(String.format("API:%s->执行游行处理器-->完成", options.getName()));
+					}
+					wanderNext(rct, params, cacheHandler, response, res.result());
+				} else {
+					LOG.error(String.format("API:%s->执行游行处理器-->异常:", options.getName()), res.cause());
+					failureHandler(rct);
+				}
+			});
+		}
+	}
+
+	/**
+	 * 游行处理器进入下一步
+	 * 
+	 * @param rct
+	 * @param params
+	 * @param cacheHandler
+	 * @param response
+	 * @param data
+	 */
+	private void wanderNext(RoutingContext rct, OrionParameter params, OrionCacheHandler cacheHandler,
+			HttpClientResponse response, Object data) {
+		if (checkEnd(rct)) {
+			return;
+		}
+		switch (destination) {
+		case BLACKLIST:
+			step1Blacklist(rct, data);
+			break;
+		case ACCESS_LIMIT:
+			step2AccessLimit(rct, data);
+			break;
+		case PARAMETER:
+			step3ParameterLoadAndCheck(rct, data);
+			break;
+		case AUTHENTICATION:
+			step4Authentication(rct, params, data);
+			break;
+		case BEFORE:
+			step5Before(rct, params, data);
+			break;
+		case CACHE:
+			step6Cache(rct, params, data);
+			break;
+		case MAIN:
+			step7Main(rct, cacheHandler, params, data);
+			break;
+		case AFTER:
+			step8After(rct, cacheHandler, response, data);
+			break;
+		case AFTER_END:
+			if (!checkEnd(rct)) {
+				Future<Buffer> future = response.body();
+				future.setHandler(end -> {
+					if (end.succeeded()) {
+						rct.response().end(end.result());
+					} else {
+						failureHandler(rct);
+					}
+				});
+			}
+			break;
+		}
+
+	}
+
+	/**
 	 * 第一步 黑名单检查
 	 * 
 	 * @param rct
+	 * @param data
 	 */
-	private void step1Blacklist(RoutingContext rct) {
-		if (rct.response().ended() || rct.response().closed()) {
+	private void step1Blacklist(RoutingContext rct, Object data) {
+		if (checkEnd(rct)) {
 			return;
 		} else if (options.getBlacklistHandler() != null) {
-			options.getBlacklistHandler().handle(rct, res -> {
+			options.getBlacklistHandler().handle(rct, data, res -> {
 				if (res.succeeded()) {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("API:%s->执行黑名单检查-->结果:通过!", options.getName()));
 					}
-					step2AccessLimit(rct, res.result());
+					if (destination == WanderDestination.ACCESS_LIMIT) {
+						wander(rct, null, null, null, res.result());
+					} else {
+						step2AccessLimit(rct, res.result());
+					}
 				} else {
 					if (res.cause() instanceof OrionProcessEndException) {
 						OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.FORBIDDEN.data()
@@ -151,7 +252,11 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				}
 			});
 		} else {
-			step2AccessLimit(rct, null);
+			if (destination == WanderDestination.ACCESS_LIMIT) {
+				wander(rct, null, null, null, data);
+			} else {
+				step2AccessLimit(rct, data);
+			}
 		}
 	}
 
@@ -162,7 +267,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param data
 	 */
 	private void step2AccessLimit(RoutingContext rct, Object data) {
-		if (rct.response().ended() || rct.response().closed()) {
+		if (checkEnd(rct)) {
 			return;
 		} else if (options.getLimitHandler() != null) {
 			options.getLimitHandler().handle(rct, data, res -> {
@@ -170,7 +275,11 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("API:%s->执行访问限制-->结果:通过!", options.getName()));
 					}
-					step3ParameterLoadAndCheck(rct, res.result());
+					if (destination == WanderDestination.PARAMETER) {
+						wander(rct, null, null, null, res.result());
+					} else {
+						step3ParameterLoadAndCheck(rct, res.result());
+					}
 				} else {
 					if (res.cause() instanceof OrionProcessEndException) {
 						OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.ACCESS_LIMIT.data()
@@ -187,7 +296,11 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				}
 			});
 		} else {
-			step3ParameterLoadAndCheck(rct, data);
+			if (destination == WanderDestination.PARAMETER) {
+				wander(rct, null, null, null, data);
+			} else {
+				step3ParameterLoadAndCheck(rct, data);
+			}
 		}
 	}
 
@@ -198,7 +311,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param data
 	 */
 	private void step3ParameterLoadAndCheck(RoutingContext rct, Object data) {
-		if (rct.response().ended() || rct.response().closed()) {
+		if (checkEnd(rct)) {
 			return;
 		} else if (options.getParameterHandler() != null) {
 			options.getParameterHandler().handle(rct, data, res -> {
@@ -206,7 +319,11 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("API:%s->执行参数检查与装载-->结果:完成!", options.getName()));
 					}
-					step4Authentication(rct, res.result(), data);
+					if (destination == WanderDestination.AUTHENTICATION) {
+						wander(rct, res.result(), null, null, data);
+					} else {
+						step4Authentication(rct, res.result(), data);
+					}
 				} else {
 					if (res.cause() instanceof OrionProcessEndException) {
 						OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.BAD_REQUEST.data()
@@ -223,7 +340,11 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				}
 			});
 		} else {
-			step4Authentication(rct, new OrionParameter(), data);
+			if (destination == WanderDestination.AUTHENTICATION) {
+				wander(rct, new OrionParameter(), null, null, data);
+			} else {
+				step4Authentication(rct, new OrionParameter(), data);
+			}
 		}
 	}
 
@@ -235,7 +356,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param data
 	 */
 	private void step4Authentication(RoutingContext rct, OrionParameter params, Object data) {
-		if (rct.response().ended() || rct.response().closed()) {
+		if (checkEnd(rct)) {
 			return;
 		} else if (options.getAuthenticationHandler() != null) {
 			options.getAuthenticationHandler().handle(rct, params, data, res -> {
@@ -243,7 +364,11 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("API:%s->执行权限认证-->结果:通过!", options.getName()));
 					}
-					step5Before(rct, params, res.result());
+					if (destination == WanderDestination.BEFORE) {
+						wander(rct, params, null, null, res.result());
+					} else {
+						step5Before(rct, params, res.result());
+					}
 				} else {
 					if (res.cause() instanceof OrionProcessEndException) {
 						OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.FORBIDDEN.data()
@@ -260,7 +385,11 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				}
 			});
 		} else {
-			step5Before(rct, params, data);
+			if (destination == WanderDestination.BEFORE) {
+				wander(rct, params, null, null, data);
+			} else {
+				step5Before(rct, params, data);
+			}
 		}
 	}
 
@@ -272,7 +401,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param data
 	 */
 	private void step5Before(RoutingContext rct, OrionParameter params, Object data) {
-		if (rct.response().ended() || rct.response().closed()) {
+		if (checkEnd(rct)) {
 			return;
 		} else if (options.getBeforeHandler() != null) {
 			options.getBeforeHandler().handle(rct, params, data, res -> {
@@ -280,14 +409,22 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("API:%s->执行前置处理器-->结果:成功!", options.getName()));
 					}
-					step6Cache(rct, params, res.result());
+					if (destination == WanderDestination.CACHE) {
+						wander(rct, params, null, null, res.result());
+					} else {
+						step6Cache(rct, params, res.result());
+					}
 				} else {
 					LOG.error(String.format("API:%s->执行前置处理器-->异常:", options.getName()), res.cause());
 					failureHandler(rct);
 				}
 			});
 		} else {
-			step6Cache(rct, params, data);
+			if (destination == WanderDestination.CACHE) {
+				wander(rct, params, null, null, data);
+			} else {
+				step6Cache(rct, params, data);
+			}
 		}
 	}
 
@@ -299,7 +436,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param data
 	 */
 	private void step6Cache(RoutingContext rct, OrionParameter params, Object data) {
-		if (rct.response().ended() || rct.response().closed()) {
+		if (checkEnd(rct)) {
 			return;
 		} else if (options.getCacheHandler() != null) {
 			options.getCacheHandler().handle(rct, params, data, res -> {
@@ -307,14 +444,22 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("API:%s->执行缓存处理器-->结果:成功!", options.getName()));
 					}
-					step7Main(rct, options.getCacheHandler(), params, res.result());
+					if (destination == WanderDestination.MAIN) {
+						wander(rct, params, options.getCacheHandler(), null, res.result());
+					} else {
+						step7Main(rct, options.getCacheHandler(), params, res.result());
+					}
 				} else {
 					LOG.error(String.format("API:%s->执行缓存处理器-->异常:", options.getName()), res.cause());
 					failureHandler(rct);
 				}
 			});
 		} else {
-			step7Main(rct, null, params, data);
+			if (destination == WanderDestination.MAIN) {
+				wander(rct, params, null, null, data);
+			} else {
+				step7Main(rct, null, params, data);
+			}
 		}
 	}
 
@@ -326,7 +471,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param data
 	 */
 	private void step7Main(RoutingContext rct, OrionCacheHandler cacheHandler, OrionParameter params, Object data) {
-		if (rct.response().ended() || rct.response().closed()) {
+		if (checkEnd(rct)) {
 			return;
 		} else if (options.getMainHandler() != null) {
 			options.getMainHandler().handle(rct, cacheHandler, params, data, res -> {
@@ -334,7 +479,11 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("API:%s->执行中心处理器-->结果:成功!", options.getName()));
 					}
-					step8After(rct, cacheHandler, res.result(), data);
+					if (destination == WanderDestination.AFTER) {
+						wander(rct, params, cacheHandler, res.result(), data);
+					} else {
+						step8After(rct, cacheHandler, res.result(), data);
+					}
 				} else {
 					LOG.error(String.format("API:%s->执行中心处理器-->异常:", options.getName()), res.cause());
 					failureHandler(rct);
@@ -355,19 +504,23 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 */
 	private void step8After(RoutingContext rct, OrionCacheHandler cacheHandler, HttpClientResponse response,
 			Object data) {
-		if (rct.response().ended() || rct.response().closed()) {
+		if (checkEnd(rct)) {
 			return;
 		} else if (options.getAfterHandler() != null) {
-			options.getAfterHandler().handle(rct, cacheHandler, response, res -> {
+			options.getAfterHandler().handle(rct, cacheHandler, response, data, res -> {
 				if (res.succeeded()) {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("API:%s->执行后置处理器-->结果:成功!", options.getName()));
 					}
-					if (!rct.response().ended() && !rct.response().closed()) {
-						if (res.result() == null) {
-							rct.response().end();
-						} else {
-							rct.response().end(res.result());
+					if (destination == WanderDestination.AFTER_END) {
+						wander(rct, null, cacheHandler, response, res.result());
+					} else {
+						if (!rct.response().ended() && !rct.response().closed()) {
+							if (res.result() == null) {
+								rct.response().end();
+							} else {
+								rct.response().end(res.result());
+							}
 						}
 					}
 				} else {
@@ -376,17 +529,33 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				}
 			});
 		} else {
-			if (!rct.response().ended() && !rct.response().closed()) {
-				Future<Buffer> future = response.body();
-				future.setHandler(end -> {
-					if (end.succeeded()) {
-						rct.response().end(end.result());
-					} else {
-						failureHandler(rct);
-					}
-				});
+			if (destination == WanderDestination.AFTER_END) {
+				wander(rct, null, cacheHandler, response, data);
+			} else {
+				if (!checkEnd(rct)) {
+					Future<Buffer> future = response.body();
+					future.setHandler(end -> {
+						if (end.succeeded()) {
+							rct.response().end(end.result());
+						} else {
+							failureHandler(rct);
+						}
+					});
+				}
 			}
 		}
+	}
+
+	/**
+	 * 坚持response是否已经响应或关闭了
+	 * 
+	 * @return
+	 */
+	private boolean checkEnd(RoutingContext rct) {
+		if (rct.response().ended() || rct.response().closed()) {
+			return true;
+		}
+		return false;
 	}
 
 }

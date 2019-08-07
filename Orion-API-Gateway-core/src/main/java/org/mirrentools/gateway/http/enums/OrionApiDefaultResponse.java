@@ -1,6 +1,6 @@
 package org.mirrentools.gateway.http.enums;
 
-import org.mirrentools.gateway.http.OrionStatusResponse;
+import org.mirrentools.gateway.http.model.OrionStatusResponse;
 
 /**
  * 响应状态默认值

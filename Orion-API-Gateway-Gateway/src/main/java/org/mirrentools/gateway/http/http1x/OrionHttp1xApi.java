@@ -1,7 +1,7 @@
 package org.mirrentools.gateway.http.http1x;
 
 import org.mirrentools.gateway.http.OrionHttpApi;
-import org.mirrentools.gateway.http.options.OrionHttpApiOptions;
+import org.mirrentools.gateway.http.OrionHttpApiOptions;
 
 /**
  * http1.x的API接口

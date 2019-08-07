@@ -1,4 +1,4 @@
-package org.mirrentools.gateway.http;
+package org.mirrentools.gateway.http.model;
 
 import java.util.ArrayList;
 import java.util.List;

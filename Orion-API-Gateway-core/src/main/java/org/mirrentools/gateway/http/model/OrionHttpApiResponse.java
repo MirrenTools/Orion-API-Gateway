@@ -1,4 +1,4 @@
-package org.mirrentools.gateway.http;
+package org.mirrentools.gateway.http.model;
 
 /**
  * OrionAPI响应

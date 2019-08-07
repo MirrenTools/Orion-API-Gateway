@@ -1,8 +1,9 @@
-package org.mirrentools.gateway.http;
+package org.mirrentools.gateway.http.model;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.http.HttpFrame;
 
 /**
  * http1.x请求或响应的数据
@@ -22,6 +23,8 @@ public class OrionParameter {
 	private MultiMap body = new CaseInsensitiveHeaders();
 	/** body的二进制数据 */
 	private Buffer buffer;
+	/** Http2.x的 feame */
+	private HttpFrame httpframe;
 
 	/**
 	 * 获取header数据
@@ -31,6 +34,7 @@ public class OrionParameter {
 	public MultiMap getHeader() {
 		return header;
 	}
+
 	/**
 	 * 添加header数据
 	 * 
@@ -41,6 +45,7 @@ public class OrionParameter {
 		getHeader().add(name, value);
 		return this;
 	}
+
 	/**
 	 * 设置header数据
 	 * 
@@ -51,6 +56,7 @@ public class OrionParameter {
 		this.header = header;
 		return this;
 	}
+
 	/**
 	 * 获取path数据
 	 * 
@@ -81,6 +87,7 @@ public class OrionParameter {
 		this.path = path;
 		return this;
 	}
+
 	/**
 	 * 获取query数据
 	 * 
@@ -89,6 +96,7 @@ public class OrionParameter {
 	public MultiMap getQuery() {
 		return query;
 	}
+
 	/**
 	 * 添加query数据
 	 * 
@@ -99,6 +107,7 @@ public class OrionParameter {
 		getQuery().add(name, value);
 		return this;
 	}
+
 	/**
 	 * 设置query数据
 	 * 
@@ -109,6 +118,7 @@ public class OrionParameter {
 		this.query = query;
 		return this;
 	}
+
 	/**
 	 * 获取body数据
 	 * 
@@ -117,6 +127,7 @@ public class OrionParameter {
 	public MultiMap getBody() {
 		return body;
 	}
+
 	/**
 	 * 添加body的数据
 	 * 
@@ -127,6 +138,7 @@ public class OrionParameter {
 		getBody().add(name, value);
 		return this;
 	}
+
 	/**
 	 * 设置body的数据
 	 * 
@@ -137,6 +149,7 @@ public class OrionParameter {
 		this.body = body;
 		return this;
 	}
+
 	/**
 	 * 获取body的buffer
 	 * 
@@ -168,6 +181,32 @@ public class OrionParameter {
 	public OrionParameter setBuffer(Buffer buffer) {
 		this.buffer = buffer;
 		return this;
+	}
+
+	/**
+	 * 获取http2x的 frame
+	 * 
+	 * @return
+	 */
+	public HttpFrame getHttpframe() {
+		return httpframe;
+	}
+
+	/**
+	 * 设置http2x的 frame
+	 * 
+	 * @param httpframe
+	 * @return
+	 */
+	public OrionParameter setHttpframe(HttpFrame httpframe) {
+		this.httpframe = httpframe;
+		return this;
+	}
+
+	@Override
+	public String toString() {
+		return "OrionParameter [header=" + header + ", path=" + path + ", query=" + query + ", body=" + body + ", buffer="
+				+ buffer + ", httpframe=" + httpframe + "]";
 	}
 
 }

@@ -1,4 +1,4 @@
-package org.mirrentools.gateway.http;
+package org.mirrentools.gateway.http.model;
 
 import io.vertx.core.json.JsonObject;
 

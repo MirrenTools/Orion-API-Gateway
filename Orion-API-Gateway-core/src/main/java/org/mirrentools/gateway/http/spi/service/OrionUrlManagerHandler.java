@@ -1,6 +1,6 @@
-package org.mirrentools.gateway.http.spi.handler;
+package org.mirrentools.gateway.http.spi.service;
 
-import org.mirrentools.gateway.http.OrionUrlRecord;
+import org.mirrentools.gateway.http.model.OrionUrlRecord;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

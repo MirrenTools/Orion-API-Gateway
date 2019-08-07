@@ -23,8 +23,9 @@ public interface OrionAfterHandler {
 	 * @param rct          上下文
 	 * @param cacheHandler 缓存处理器,用于做缓存的添加或删除
 	 * @param response     官网请求后台得到响应的数据
+	 * @param data         拓展参数
 	 * @param handler
 	 */
-	void handle(RoutingContext rct, OrionCacheHandler cacheHandler, HttpClientResponse response,
+	void handle(RoutingContext rct, OrionCacheHandler cacheHandler, HttpClientResponse response, Object data,
 			Handler<AsyncResult<Buffer>> handler);
 }

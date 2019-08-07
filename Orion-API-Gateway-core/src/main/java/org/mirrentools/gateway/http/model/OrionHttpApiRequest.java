@@ -1,8 +1,8 @@
-package org.mirrentools.gateway.http;
+package org.mirrentools.gateway.http.model;
 
 import java.util.Set;
 
-import org.mirrentools.gateway.http.spi.handler.OrionUrlManagerHandler;
+import org.mirrentools.gateway.http.spi.service.OrionUrlManagerHandler;
 import org.mirrentools.gateway.http.util.OrionRequestParameterConverter;
 
 import io.vertx.core.http.HttpMethod;

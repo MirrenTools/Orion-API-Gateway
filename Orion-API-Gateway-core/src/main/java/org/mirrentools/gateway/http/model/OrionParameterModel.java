@@ -1,4 +1,4 @@
-package org.mirrentools.gateway.http;
+package org.mirrentools.gateway.http.model;
 
 import org.mirrentools.gateway.enums.ParameterType;
 import org.mirrentools.gateway.http.enums.ParameterPosition;
@@ -10,7 +10,7 @@ import org.mirrentools.gateway.http.enums.ParameterPosition;
  * @version 创建时间：2019年8月2日 下午1:43:00
  *
  */
-public class OrionHttpParameterModel {
+public class OrionParameterModel {
 	/** 从客户端那个位置取数据 */
 	private ParameterPosition formPosition;
 	/** 数据在客户端叫什么 */
@@ -34,7 +34,7 @@ public class OrionHttpParameterModel {
 		return formPosition;
 	}
 
-	public OrionHttpParameterModel setFormPosition(ParameterPosition formPosition) {
+	public OrionParameterModel setFormPosition(ParameterPosition formPosition) {
 		this.formPosition = formPosition;
 		return this;
 	}
@@ -43,7 +43,7 @@ public class OrionHttpParameterModel {
 		return formName;
 	}
 
-	public OrionHttpParameterModel setFormName(String formName) {
+	public OrionParameterModel setFormName(String formName) {
 		this.formName = formName;
 		return this;
 	}
@@ -52,7 +52,7 @@ public class OrionHttpParameterModel {
 		return toPosition;
 	}
 
-	public OrionHttpParameterModel setToPosition(ParameterPosition toPosition) {
+	public OrionParameterModel setToPosition(ParameterPosition toPosition) {
 		this.toPosition = toPosition;
 		return this;
 	}
@@ -61,7 +61,7 @@ public class OrionHttpParameterModel {
 		return toName;
 	}
 
-	public OrionHttpParameterModel setToName(String toName) {
+	public OrionParameterModel setToName(String toName) {
 		this.toName = toName;
 		return this;
 	}
@@ -70,7 +70,7 @@ public class OrionHttpParameterModel {
 		return type;
 	}
 
-	public OrionHttpParameterModel setType(ParameterType type) {
+	public OrionParameterModel setType(ParameterType type) {
 		this.type = type;
 		return this;
 	}
@@ -79,7 +79,7 @@ public class OrionHttpParameterModel {
 		return nullable;
 	}
 
-	public OrionHttpParameterModel setNullable(boolean nullable) {
+	public OrionParameterModel setNullable(boolean nullable) {
 		this.nullable = nullable;
 		return this;
 	}
@@ -88,7 +88,7 @@ public class OrionHttpParameterModel {
 		return isArray;
 	}
 
-	public OrionHttpParameterModel setArray(boolean isArray) {
+	public OrionParameterModel setArray(boolean isArray) {
 		this.isArray = isArray;
 		return this;
 	}
@@ -97,7 +97,7 @@ public class OrionHttpParameterModel {
 		return def;
 	}
 
-	public OrionHttpParameterModel setDef(String def) {
+	public OrionParameterModel setDef(String def) {
 		this.def = def;
 		return this;
 	}
@@ -106,7 +106,7 @@ public class OrionHttpParameterModel {
 		return check;
 	}
 
-	public OrionHttpParameterModel setCheck(OrionParameterModelCheck check) {
+	public OrionParameterModel setCheck(OrionParameterModelCheck check) {
 		this.check = check;
 		return this;
 	}
