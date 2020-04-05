@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import io.vertx.core.json.JsonArray;
@@ -16,58 +17,6 @@ import io.vertx.core.json.JsonObject;
  *
  */
 public class StringUtil {
-	/**
-	 * 将字符串首字母大写其后小写
-	 * 
-	 * @param str
-	 * @return
-	 */
-	public static String fristToUpCaseLaterToLoCase(String str) {
-		if (str != null && str.length() > 0) {
-			str = (str.substring(0, 1).toUpperCase()) + (str.substring(1).toLowerCase());
-		}
-		return str;
-	}
-
-	/**
-	 * 将字符串首字母小写其后大写
-	 * 
-	 * @param str
-	 * @return
-	 */
-	public static String fristToLoCaseLaterToUpCase(String str) {
-		if (str != null && str.length() > 0) {
-			str = (str.substring(0, 1).toLowerCase()) + (str.substring(1).toUpperCase());
-
-		}
-		return str;
-	}
-
-	/**
-	 * 将字符串首字母大写
-	 * 
-	 * @param str
-	 * @return
-	 */
-	public static String fristToUpCase(String str) {
-		if (str != null && str.length() > 0) {
-			str = str.substring(0, 1).toUpperCase() + str.substring(1);
-		}
-		return str;
-	}
-
-	/**
-	 * 将字符串首字母小写
-	 * 
-	 * @param str
-	 * @return
-	 */
-	public static String fristToLoCase(String str) {
-		if (str != null && str.length() > 0) {
-			str = str.substring(0, 1).toLowerCase() + str.substring(1);
-		}
-		return str;
-	}
 
 	/**
 	 * 检查字符串里面是否包含指定字符,包含返回true
@@ -89,6 +38,7 @@ public class StringUtil {
 		}
 		return true;
 	}
+
 	/**
 	 * 将字符串str中带有集合中rep[0]的字符串,代替为rep[1]的中的字符串
 	 * 
@@ -105,6 +55,7 @@ public class StringUtil {
 		}
 		return str;
 	}
+
 	/**
 	 * 创建字符串数组
 	 * 
@@ -134,6 +85,19 @@ public class StringUtil {
 	 * @param str
 	 * @return
 	 */
+	public static boolean isNullOrEmpty(Object str) {
+		if (str == null || "".equals(str.toString().trim())) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 判断字符串是否为null或者空,如果是返回true
+	 * 
+	 * @param str
+	 * @return
+	 */
 	public static boolean isNullOrEmpty(String... str) {
 		if (str == null || str.length == 0) {
 			return true;
@@ -146,28 +110,66 @@ public class StringUtil {
 		return false;
 	}
 
+	/** 字符串数组大小写字母与数字,该数组的规则为0-9,a-z,A-Z */
+	public final static char[] ALPHANUMERIC = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+
 	/**
-	 * 将毫秒按指定格式转换为 年日时分秒,如果如果格式中不存在年则将年装换为天
+	 * 生成指定程度随机字符串
 	 * 
-	 * @param time
-	 *          毫秒
-	 * @param pattern
-	 *          正则:$y=年,$d=日,$h=小时,$m分钟,$s=秒 <br>
-	 *          示例:$y年$d日 = 10年12天
+	 * @param len
+	 *          字符串长度
 	 * @return
 	 */
-	public static String millisToDateTime(long time, String pattern) {
-		long day = time / 86400000;
-		long hour = (time % 86400000) / 3600000;
-		long minute = (time % 86400000 % 3600000) / 60000;
-		long second = (time % 86400000 % 3600000 % 60000) / 1000;
-		if (pattern.indexOf("$y") == -1) {
-			pattern = pattern.replace("$d", Long.toString(day));
-		} else {
-			pattern = pattern.replace("$y", Long.toString(day / 365)).replace("$d", Long.toString(day % 365));
+	public static String randomString(int len) {
+		StringBuilder result = new StringBuilder(len);
+		Random random = new Random();
+		for (int i = 0; i < len; i++) {
+			result.append(ALPHANUMERIC[random.nextInt(62)]);
 		}
-		return pattern.replace("$h", Long.toString(hour)).replace("$m", Long.toString(minute)).replace("$s", Long.toString(second));
+		return result.toString();
 	}
+
+	/**
+	 * 生成指定程度随机字符串
+	 * 
+	 * @param len
+	 *          字符串长度
+	 * @param mode
+	 *          生成的类型:<br>
+	 *          0=0-9,<br>
+	 *          1=a-Z,<br>
+	 *          2=a-z,<br>
+	 *          3=A-Z,<br>
+	 *          其他返回0-Z
+	 * @return
+	 */
+	public static String randomString(int len, int mode) {
+		StringBuilder result = new StringBuilder(len);
+		Random random = new Random();
+		if (mode == 0) {
+			for (int i = 0; i < len; i++) {
+				result.append(ALPHANUMERIC[random.nextInt(9)]);
+			}
+		} else if (mode == 1) {
+			for (int i = 0; i < len; i++) {
+				result.append(ALPHANUMERIC[random.nextInt(52) + 10]);
+			}
+		} else if (mode == 2) {
+			for (int i = 0; i < len; i++) {
+				result.append(ALPHANUMERIC[random.nextInt(26) + 10]);
+			}
+		} else if (mode == 3) {
+			for (int i = 0; i < len; i++) {
+				result.append(ALPHANUMERIC[random.nextInt(26) + 36]);
+			}
+		} else {
+			for (int i = 0; i < len; i++) {
+				result.append(ALPHANUMERIC[random.nextInt(62)]);
+			}
+		}
+		return result.toString();
+	}
+
 	/**
 	 * 获得随机UUID,true=带下划线,false不带下划线
 	 * 
@@ -181,16 +183,7 @@ public class StringUtil {
 			return UUID.randomUUID().toString().replace("-", "");
 		}
 	}
-	/**
-	 * 判断是否为正确的用户id
-	 * 
-	 * @param id
-	 *          用户id
-	 * @return 正确的id返回true,错误返回false
-	 */
-	public static boolean isRightUserId(String id) {
-		return id != null && id.matches("^[a-z][a-z0-9_]{4,18}$");
-	}
+
 	/**
 	 * 判断一个字符串是否为指定对象
 	 * 
@@ -224,6 +217,7 @@ public class StringUtil {
 			return false;
 		}
 	}
+
 	/**
 	 * java的数据类型枚举类
 	 * 
@@ -233,6 +227,7 @@ public class StringUtil {
 	public static enum JavaType {
 		String, Integer, Date, Instant, Long, Float, Double, Boolean, JsonObject, JsonArray;
 	}
+
 	/**
 	 * 将一个字符串转换为int,如果字符串为null或者""返回0
 	 * 
@@ -266,6 +261,27 @@ public class StringUtil {
 			return null;
 		}
 	}
+
+	/**
+	 * 将一个字符串转换为Integer,如果字符串为null或者""返回null
+	 * 
+	 * @param str
+	 *          字符串
+	 * @param def
+	 *          默认值
+	 * @return
+	 */
+	public static Integer getInteger(String str, Integer def) {
+		if (isNullOrEmpty(str)) {
+			return def;
+		}
+		try {
+			return new Integer(str.trim());
+		} catch (Exception e) {
+			return def;
+		}
+	}
+
 	/**
 	 * 将一个字符串转换为long,如果字符串为null或者""返回0
 	 * 
@@ -282,6 +298,7 @@ public class StringUtil {
 			return 0L;
 		}
 	}
+
 	/**
 	 * 将一个字符串转换为Long,如果字符串为null或者""返回null
 	 * 
@@ -298,6 +315,26 @@ public class StringUtil {
 			return null;
 		}
 	}
+
+	/**
+	 * 将一个字符串转换为Long
+	 * 
+	 * @param str
+	 * @param def
+	 *          默认值
+	 * @return
+	 */
+	public static Long getLong(String str, Long def) {
+		if (isNullOrEmpty(str)) {
+			return def;
+		}
+		try {
+			return new Long(str.trim());
+		} catch (Exception e) {
+			return def;
+		}
+	}
+
 	/**
 	 * 将一个字符串转换为float,如果字符串为null或者""返回0.0f
 	 * 
@@ -314,6 +351,7 @@ public class StringUtil {
 			return 0.0f;
 		}
 	}
+
 	/**
 	 * 将一个字符串转换为float,如果字符串为null或者""返回null
 	 * 
@@ -330,6 +368,7 @@ public class StringUtil {
 			return null;
 		}
 	}
+
 	/**
 	 * 将一个字符串转换为double,如果字符串为null或者""返回0.0
 	 * 
@@ -346,6 +385,7 @@ public class StringUtil {
 			return 0.0;
 		}
 	}
+
 	/**
 	 * 将一个字符串转换为Double,如果字符串为null或者""返回null
 	 * 
@@ -362,6 +402,7 @@ public class StringUtil {
 			return null;
 		}
 	}
+
 	/**
 	 * 将一个字符串转换为Date,如果字符串为null或者""返回null
 	 * 
@@ -373,11 +414,12 @@ public class StringUtil {
 			return null;
 		}
 		try {
-			return Date.valueOf(str);
+			return Date.valueOf(str.trim());
 		} catch (Exception e) {
 			return new Date(new Long(str));
 		}
 	}
+
 	/**
 	 * 将一个字符串转换为Instant,如果字符串为null或者""返回null
 	 * 
@@ -397,6 +439,7 @@ public class StringUtil {
 			return Instant.ofEpochMilli(new Long(str));
 		}
 	}
+
 	/**
 	 * 将一个字符串转换为JsonObject,如果字符串为null或者""返回null
 	 * 
@@ -413,6 +456,7 @@ public class StringUtil {
 			return null;
 		}
 	}
+
 	/**
 	 * 将一个字符串转换为JsonArray,如果字符串为null或者""返回null
 	 * 
@@ -428,46 +472,6 @@ public class StringUtil {
 		} catch (Exception e) {
 			return null;
 		}
-	}
-	/**
-	 * 手机号码格式化 将+区号-手机号改为00区号手机号,如果为+86-或者0086则将其去除
-	 * 
-	 * @param phone
-	 * @return
-	 */
-	public static String phoneFormat(String phone) {
-		if (phone == null) {
-			return null;
-		}
-		phone = phone.trim();
-		if (phone.startsWith("0086")) {
-			phone = phone.substring(4);
-		}
-		if (phone.startsWith("+86-")) {
-			phone = phone.replace("+86-", "");
-		}
-		phone = phone.replace("+", "00").replace("-", "");
-		return phone;
-	}
-
-	/**
-	 * 手机号码格式化 如果为+86-或者0086则将其去除
-	 * 
-	 * @param phone
-	 * @return
-	 */
-	public static String phoneFormatChina(String phone) {
-		if (phone == null) {
-			return null;
-		}
-		phone = phone.trim();
-		if (phone.startsWith("0086")) {
-			phone = phone.substring(4);
-		}
-		if (phone.startsWith("+86-")) {
-			phone = phone.replace("+86-", "");
-		}
-		return phone;
 	}
 
 }
