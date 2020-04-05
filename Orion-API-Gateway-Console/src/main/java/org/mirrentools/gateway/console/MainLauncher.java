@@ -11,6 +11,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Launcher;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+
 /**
  * 启动器
  * 
@@ -25,7 +26,7 @@ public class MainLauncher extends Launcher {
 	 * @param clz
 	 */
 	public static void start(Class<?> clz) {
-		main(new String[]{"run", clz.getName()});
+		main(new String[] { "run", clz.getName() });
 	}
 
 	/**
@@ -40,6 +41,7 @@ public class MainLauncher extends Launcher {
 		System.setProperty("vertx.disableDnsResolver", "true");
 		new MainLauncher().dispatch(args);
 	}
+
 	/**
 	 * Utility method to execute a specific command.
 	 *
@@ -80,6 +82,7 @@ public class MainLauncher extends Launcher {
 			bs = Files.readAllBytes(path);
 			JsonObject config = new JsonObject(new String(bs));
 			// 加载配置
+			deploymentOptions.setConfig(config);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
