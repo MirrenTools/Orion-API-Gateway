@@ -1,4 +1,4 @@
-package org.mirrentools.gateway.common;
+package org.mirrentools.gateway.console.common;
 
 import java.sql.SQLException;
 

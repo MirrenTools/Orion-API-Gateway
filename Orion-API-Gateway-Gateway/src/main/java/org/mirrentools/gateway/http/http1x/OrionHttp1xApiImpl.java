@@ -6,8 +6,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.mirrentools.gateway.OrionProcessEndException;
 import org.mirrentools.gateway.common.OrionApiGatewayAttribute;
 import org.mirrentools.gateway.http.OrionHttpApiOptions;
@@ -21,6 +19,8 @@ import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -30,8 +30,9 @@ import io.vertx.ext.web.RoutingContext;
  *
  */
 public class OrionHttp1xApiImpl implements OrionHttp1xApi {
+	
 	/** 日志处理 */
-	private final Logger LOG = LogManager.getLogger(OrionHttp1xApiImpl.class);
+	private final Logger LOG = LoggerFactory.getLogger(OrionHttp1xApiImpl.class);
 
 	/** OrionHttp1xApi配置 */
 	private OrionHttpApiOptions options;
@@ -48,8 +49,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 		Objects.requireNonNull(options, "The options cannot be null");
 		Objects.requireNonNull(options.getMainHandler(), "The main handler cannot be null ");
 		if (options.getWanderHandler() != null) {
-			Objects.requireNonNull(options.getWanderHandler().getDestination(),
-					"If the WanderHandler is not null, then the Destination cannot be null.");
+			Objects.requireNonNull(options.getWanderHandler().getDestination(), "If the WanderHandler is not null, then the Destination cannot be null.");
 			this.destination = options.getWanderHandler().getDestination();
 		}
 		if (LOG.isDebugEnabled()) {
@@ -97,8 +97,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 			}
 		} else {
 			OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.FAILURE.data()
-					: Optional.ofNullable(options.getResponse().getForbiddenResponse())
-							.orElse(OrionApiDefaultResponse.FAILURE.data());
+					: Optional.ofNullable(options.getResponse().getForbiddenResponse()).orElse(OrionApiDefaultResponse.FAILURE.data());
 			endResponse(failureHandler, status);
 			if (options.getFailureHandlerListeners() != null) {
 				options.getFailureHandlerListeners().forEach(e -> e.handle(failureHandler));
@@ -122,10 +121,8 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("结束响应:" + status);
 		}
-		rct.response().putHeader(HttpHeaders.SERVER, OrionApiGatewayAttribute.NAME)
-				.putHeader(HttpHeaders.CONTENT_TYPE, status.getType())
-				.putHeader(HttpHeaders.DATE, ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.RFC_1123_DATE_TIME))
-				.setStatusCode(status.getCode()).setStatusMessage(status.getMsg());
+		rct.response().putHeader(HttpHeaders.SERVER, OrionApiGatewayAttribute.NAME).putHeader(HttpHeaders.CONTENT_TYPE, status.getType())
+				.putHeader(HttpHeaders.DATE, ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.RFC_1123_DATE_TIME)).setStatusCode(status.getCode()).setStatusMessage(status.getMsg());
 		if (status.getData() != null) {
 			rct.response().end(status.getData());
 		} else {
@@ -142,8 +139,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param response
 	 * @param data
 	 */
-	private void wander(RoutingContext rct, OrionParameter params, OrionCacheHandler cacheHandler,
-			HttpClientResponse response, Object data) {
+	private void wander(RoutingContext rct, OrionParameter params, OrionCacheHandler cacheHandler, HttpClientResponse response, Object data) {
 		if (checkEnd(rct)) {
 			return;
 		} else {
@@ -170,8 +166,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param response
 	 * @param data
 	 */
-	private void wanderNext(RoutingContext rct, OrionParameter params, OrionCacheHandler cacheHandler,
-			HttpClientResponse response, Object data) {
+	private void wanderNext(RoutingContext rct, OrionParameter params, OrionCacheHandler cacheHandler, HttpClientResponse response, Object data) {
 		if (checkEnd(rct)) {
 			return;
 		}
@@ -239,8 +234,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				} else {
 					if (res.cause() instanceof OrionProcessEndException) {
 						OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.FORBIDDEN.data()
-								: Optional.ofNullable(options.getResponse().getForbiddenResponse())
-										.orElse(OrionApiDefaultResponse.FORBIDDEN.data());
+								: Optional.ofNullable(options.getResponse().getForbiddenResponse()).orElse(OrionApiDefaultResponse.FORBIDDEN.data());
 						if (LOG.isDebugEnabled()) {
 							LOG.debug(String.format("API:%s->执行黑名单检查-->结果:不通过", options.getName()));
 						}
@@ -283,8 +277,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				} else {
 					if (res.cause() instanceof OrionProcessEndException) {
 						OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.ACCESS_LIMIT.data()
-								: Optional.ofNullable(options.getResponse().getForbiddenResponse())
-										.orElse(OrionApiDefaultResponse.ACCESS_LIMIT.data());
+								: Optional.ofNullable(options.getResponse().getForbiddenResponse()).orElse(OrionApiDefaultResponse.ACCESS_LIMIT.data());
 						if (LOG.isDebugEnabled()) {
 							LOG.debug(String.format("API:%s->执行访问限制-->结果:不通过!", options.getName()));
 						}
@@ -327,8 +320,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				} else {
 					if (res.cause() instanceof OrionProcessEndException) {
 						OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.BAD_REQUEST.data()
-								: Optional.ofNullable(options.getResponse().getForbiddenResponse())
-										.orElse(OrionApiDefaultResponse.BAD_REQUEST.data());
+								: Optional.ofNullable(options.getResponse().getForbiddenResponse()).orElse(OrionApiDefaultResponse.BAD_REQUEST.data());
 						if (LOG.isDebugEnabled()) {
 							LOG.debug(String.format("API:%s->执行参数检查与装载-->结果:检查不通过!", options.getName()));
 						}
@@ -372,8 +364,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 				} else {
 					if (res.cause() instanceof OrionProcessEndException) {
 						OrionStatusResponse status = options.getResponse() == null ? OrionApiDefaultResponse.FORBIDDEN.data()
-								: Optional.ofNullable(options.getResponse().getForbiddenResponse())
-										.orElse(OrionApiDefaultResponse.FORBIDDEN.data());
+								: Optional.ofNullable(options.getResponse().getForbiddenResponse()).orElse(OrionApiDefaultResponse.FORBIDDEN.data());
 						if (LOG.isDebugEnabled()) {
 							LOG.debug(String.format("API:%s->执行权限认证-->结果:不通过!", options.getName()));
 						}
@@ -502,8 +493,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	 * @param params
 	 * @param data
 	 */
-	private void step8After(RoutingContext rct, OrionCacheHandler cacheHandler, HttpClientResponse response,
-			Object data) {
+	private void step8After(RoutingContext rct, OrionCacheHandler cacheHandler, HttpClientResponse response, Object data) {
 		if (checkEnd(rct)) {
 			return;
 		} else if (options.getAfterHandler() != null) {

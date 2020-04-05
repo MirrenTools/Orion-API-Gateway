@@ -8,24 +8,24 @@
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<name>Orion-API-Gateway</name>
-	<description>Orion-API-Gateway is an upgraded version of VX-API-Gateway</description>
+	<description>Orion-API-Gateway is an upgraded version of VX-API-Gateway
+	</description>
 	<modules>
 		<module>Orion-API-Gateway-Gateway</module>
 		<module>Orion-API-Gateway-Console</module>
-		<module>Orion-API-Gateway-common</module>
 		<module>Orion-API-Gateway-core</module>
 	</modules>
 
 	<properties>
-		<project.builder.sourcesEncoding>UTF-8</project.builder.sourcesEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<project.builder.sourcesEncoding>UTF-8
+		</project.builder.sourcesEncoding>
+		<project.reporting.outputEncoding>UTF-8
+		</project.reporting.outputEncoding>
 		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
 		<vertx.version>4.0.0-milestone1</vertx.version>
 		<junit.version>4.12</junit.version>
 		<log4j.version>1.7.25</log4j.version>
 		<javassist.version>3.21.0-GA</javassist.version>
-		<druid.version>1.1.9</druid.version>
-		<mysql.version>5.1.40</mysql.version>
 	</properties>
 
 	<dependencyManagement>
@@ -74,18 +74,6 @@
 			<groupId>io.netty</groupId>
 			<artifactId>netty-transport-native-epoll</artifactId>
 			<classifier>linux-x86_64</classifier>
-		</dependency>
-		<!-- Druid连接池 -->
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>druid</artifactId>
-			<version>${druid.version}</version>
-		</dependency>
-		<!-- Mysql -->
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.version}</version>
 		</dependency>
 		<!-- 日志处理文件 -->
 		<dependency>
