@@ -18,7 +18,7 @@
 		<maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
 		<exec-maven-plugin.version>1.5.0</exec-maven-plugin.version>
 		<druid.version>1.1.9</druid.version>
-		<mysql.version>5.1.40</mysql.version>
+		<mysql.version>8.0.16</mysql.version>
 		<main.launcher>org.mirrentools.gateway.console.MainLauncher</main.launcher>
 		<main.verticle>org.mirrentools.gateway.console.MainVerticle</main.verticle>
 	</properties>
