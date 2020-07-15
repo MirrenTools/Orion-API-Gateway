@@ -27,9 +27,8 @@ import org.apache.logging.log4j.Logger;
 public class AESUtil {
 	private static final Logger LOG = LogManager.getLogger(AESUtil.class);
 
-	// 加解密的钥匙
-	private static final String defaultKey = "com.zhunei.qmz-Mirren";
-
+	// 加解密的默认钥匙
+	private static final String DEFAULT_KEY = "org.mirrentools.orion.ag";
 	/**
 	 * 使用128位AES加密<br>
 	 * 
@@ -87,14 +86,14 @@ public class AESUtil {
 	 * 加密 1.构造密钥生成器 2.根据ecnodeRules规则初始化密钥生成器 3.产生密钥 4.创建和初始化密码器 5.内容加密 6.返回字符串
 	 */
 	public static String encodeAES(String content) {
-		return encodeAES(content, defaultKey);
+		return encodeAES(content, DEFAULT_KEY);
 	}
 
 	/**
 	 * 解密 解密过程： 1.同加密1-4步 2.将加密后的字符串反纺成byte[]数组 3.将加密内容解密
 	 */
 	public static String decodeAES(String content) {
-		return decodeAES(content, defaultKey);
+		return decodeAES(content, DEFAULT_KEY);
 	}
 
 	public static String decodeAES(String content, String aesKey) {

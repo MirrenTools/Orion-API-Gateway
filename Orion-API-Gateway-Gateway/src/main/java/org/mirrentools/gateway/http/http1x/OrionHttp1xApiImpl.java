@@ -37,7 +37,7 @@ public class OrionHttp1xApiImpl implements OrionHttp1xApi {
 	/** OrionHttp1xApi配置 */
 	private OrionHttpApiOptions options;
 	/** 游行处理器的位置 */
-	WanderDestination destination;
+	private WanderDestination destination;
 
 	/**
 	 * 初始化
