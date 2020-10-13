@@ -23,7 +23,7 @@
 		</project.reporting.outputEncoding>
 		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
 		<vertx.version>4.0.0-milestone1</vertx.version>
-		<junit.version>4.12</junit.version>
+		<junit.version>4.13.1</junit.version>
 		<log4j.version>1.7.25</log4j.version>
 		<javassist.version>3.21.0-GA</javassist.version>
 	</properties>
