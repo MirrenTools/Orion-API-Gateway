@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -13,14 +15,16 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<main.launcher>org.mirrentools.gateway.console.MainLauncher</main.launcher>
+		<main.verticle>org.mirrentools.gateway.console.MainVerticle</main.verticle>
 		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
 		<maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
 		<exec-maven-plugin.version>1.5.0</exec-maven-plugin.version>
-		<druid.version>1.1.9</druid.version>
-		<mysql.version>5.1.40</mysql.version>
-		<main.launcher>org.mirrentools.gateway.console.MainLauncher</main.launcher>
-		<main.verticle>org.mirrentools.gateway.console.MainVerticle</main.verticle>
+		<druid.version>1.2.4</druid.version>
+		<sqlite.version>3.8.11.2</sqlite.version>
+		<mysql.version>8.0.23</mysql.version>
+		<sql.assist.version>4.0.0-RC</sql.assist.version>
 	</properties>
 
 
@@ -36,6 +40,12 @@
 			<artifactId>druid</artifactId>
 			<version>${druid.version}</version>
 		</dependency>
+		<!-- SQLite -->
+		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>${sqlite.version}</version><!--$NO-MVN-MAN-VER$ -->
+		</dependency>
 		<!-- Mysql -->
 		<dependency>
 			<groupId>mysql</groupId>
@@ -45,7 +55,7 @@
 		<dependency>
 			<groupId>org.mirrentools</groupId>
 			<artifactId>vertx-sql-assist</artifactId>
-			<version>1.0.7</version>
+			<version>${sql.assist.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -70,20 +80,22 @@
 						</goals>
 						<configuration>
 							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
 										<Main-Class>${main.launcher}</Main-Class>
 										<Main-Verticle>${main.verticle}</Main-Verticle>
 									</manifestEntries>
 								</transformer>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 									<resource>META-INF/services/io.vertx.core.spi.VerticleFactory
 									</resource>
 								</transformer>
 							</transformers>
 							<artifactSet>
 							</artifactSet>
-							<outputFile>${basedir}/dist/Orion-Api-Gateway-Console/Orion-Api-Gateway-Console-${project.version}-fat.jar
+							<outputFile>${basedir}/dist/Orion-Api-Gateway-Console/Orion-Api-Gateway-Console-fat.jar
 							</outputFile>
 						</configuration>
 					</execution>

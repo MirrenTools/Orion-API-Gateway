@@ -1,5 +1,8 @@
 package org.mirrentools.gateway.http;
 
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.EncodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.json.JsonCodec;
 
@@ -10,21 +13,8 @@ import io.vertx.core.spi.json.JsonCodec;
  * @author <a href="https://mirrentools.org/">Mirren</a>
  * @version 1.0.0
  */
-public class OrionHttpApiOptionsConverter implements JsonCodec<OrionHttpApiOptions, JsonObject> {
-	@Override
-	public JsonObject encode(OrionHttpApiOptions value) {
-		return (value != null) ? value.toJson() : null;
-	}
+public class OrionHttpApiOptionsConverter implements JsonCodec {
 
-	@Override
-	public OrionHttpApiOptions decode(JsonObject value) {
-		return (value != null) ? new OrionHttpApiOptions(value) : null;
-	}
-
-	@Override
-	public Class<OrionHttpApiOptions> getTargetClass() {
-		return OrionHttpApiOptions.class;
-	}
 
 	/**
 	 * 通过JsonObject初始化
@@ -54,5 +44,35 @@ public class OrionHttpApiOptionsConverter implements JsonCodec<OrionHttpApiOptio
 	 */
 	static void toJson(OrionHttpApiOptions obj, java.util.Map<String, Object> json) {
 		// TODO 待实现
+	}
+
+	@Override
+	public <T> T fromString(String json, Class<T> clazz) throws DecodeException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <T> T fromBuffer(Buffer json, Class<T> clazz) throws DecodeException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <T> T fromValue(Object json, Class<T> toValueType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String toString(Object object, boolean pretty) throws EncodeException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Buffer toBuffer(Object object, boolean pretty) throws EncodeException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -2,7 +2,6 @@ package org.mirrentools.gateway.http.model;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpFrame;
 
 /**
@@ -14,13 +13,13 @@ import io.vertx.core.http.HttpFrame;
  */
 public class OrionParameter {
 	/** handler的数据 */
-	private MultiMap header = new CaseInsensitiveHeaders();
+	private MultiMap header = MultiMap.caseInsensitiveMultiMap();
 	/** path的数据 */
-	private MultiMap path = new CaseInsensitiveHeaders();
+	private MultiMap path = MultiMap.caseInsensitiveMultiMap();
 	/** query的数据 */
-	private MultiMap query = new CaseInsensitiveHeaders();
+	private MultiMap query = MultiMap.caseInsensitiveMultiMap();
 	/** body的数据 */
-	private MultiMap body = new CaseInsensitiveHeaders();
+	private MultiMap body = MultiMap.caseInsensitiveMultiMap();
 	/** body的二进制数据 */
 	private Buffer buffer;
 	/** Http2.x的 feame */
@@ -205,8 +204,8 @@ public class OrionParameter {
 
 	@Override
 	public String toString() {
-		return "OrionParameter [header=" + header + ", path=" + path + ", query=" + query + ", body=" + body + ", buffer="
-				+ buffer + ", httpframe=" + httpframe + "]";
+		return "OrionParameter [header=" + header + ", path=" + path + ", query=" + query + ", body=" + body + ", buffer=" + buffer
+				+ ", httpframe=" + httpframe + "]";
 	}
 
 }
