@@ -23,7 +23,7 @@
 		<exec-maven-plugin.version>1.5.0</exec-maven-plugin.version>
 		<druid.version>1.2.4</druid.version>
 		<sqlite.version>3.8.11.2</sqlite.version>
-		<mysql.version>8.0.23</mysql.version>
+		<mysql.version>8.0.28</mysql.version>
 		<sql.assist.version>4.0.0-RC</sql.assist.version>
 	</properties>
 
